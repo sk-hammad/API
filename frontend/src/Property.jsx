@@ -1,8 +1,19 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Property() {
+    const navigate = useNavigate();
+
     const API_URL = "http://localhost:4000/api/v1/property";
+
+    const token = localStorage.getItem("JWT");
+
+    const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+    };
+
 
 
     // Update property modal
@@ -90,14 +101,18 @@ function Property() {
                 `${API_URL}/Update/${editingId}`,
                 {
                     method:"PATCH",
-                    headers:{
-                        "Content-Type":"application/json"
-                    },
+                    headers:authHeaders,
                     body: JSON.stringify(Editproperty)
                 }
             );
 
             const data = response.json();
+
+            if (response.status === 401) {
+                localStorage.removeItem("JWT");
+                navigate("/");
+                return;
+            }
 
             if(!response.ok){
                 throw new Error(data.message || "Unable to update property");
@@ -123,8 +138,17 @@ function Property() {
             setLoading(true);
             setError("");
 
-            const response = await fetch(`${API_URL}/Show`);
+            const response = await fetch(`${API_URL}/Show`, {
+                method: "GET",
+                headers: authHeaders
+            });
             const data = await response.json();
+
+            if (response.status === 401) {
+                localStorage.removeItem("JWT");
+                navigate("/");
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(data.message || "Failed to fetch properties");
@@ -170,13 +194,17 @@ function Property() {
 
             const response = await fetch(`${API_URL}/Add`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: authHeaders,
                 body: JSON.stringify(propertyData)
             });
 
             const data = await response.json();
+
+            if (response.status === 401) {
+                localStorage.removeItem("JWT");
+                navigate("/");
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(data.message || "Unable to add property");
@@ -213,10 +241,17 @@ function Property() {
             setDeleteError("");
 
             const response = await fetch(`${API_URL}/Delete/${id}`, {
-                method: "DELETE"
+                method: "DELETE",
+                headers: authHeaders
             });
 
             const data = await response.json();
+
+            if (response.status === 401) {
+                localStorage.removeItem("JWT");
+                navigate("/");
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error(data.message || "Unable to delete property");
@@ -231,6 +266,14 @@ function Property() {
         } finally {
             setDeletingId(null);
         }
+    };
+
+
+
+    // logout 
+    const HandleLogout = () => {
+        localStorage.removeItem("JWT");
+        navigate("/");
     };
 
     return (
@@ -280,6 +323,12 @@ function Property() {
 
                 /* Property Cards */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <button
+                        onClick={HandleLogout}
+                        className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700"
+                    >
+                        Logout
+                    </button>
 
                     {properties.map((property) => (
                         <div

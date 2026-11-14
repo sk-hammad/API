@@ -6,7 +6,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently -n BACKEND,FRONTEND \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\""
-
   },
   "keywords": [],
   "author": "",
@@ -14,5 +13,8 @@
   "type": "commonjs",
   "devDependencies": {
     "concurrently": "^10.0.7"
+  },
+  "dependencies": {
+    "react-router-dom": "^7.18.5"
   }
 }
